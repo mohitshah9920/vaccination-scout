@@ -1,0 +1,1 @@
+# vaccintion-scout
