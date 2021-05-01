@@ -16,9 +16,10 @@
 
   java -jar vaccine.jar
   
+
+You'll need java installed on your computer.
+Stop program with Ctrl + C.
   
-  You'll need java installed on your computer 
-  
-  Kthxbye
+Kthxbye
   
 
