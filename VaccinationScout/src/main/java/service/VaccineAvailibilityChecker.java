@@ -96,7 +96,8 @@ public class VaccineAvailibilityChecker {
        System.out.println("District not found. Exiting ..");
        System.exit(0);
     }
-    
+    String districtId = districts.get(districtName);
+    //System.out.println(districtId);
     DateTimeFormatter formatter = DateTimeFormat.forPattern("dd-MM-yyyy");
     DateTime today = DateTime.now();
     int weeksToCheck = 6;
@@ -104,7 +105,7 @@ public class VaccineAvailibilityChecker {
     while (true) {
        for (int i =0; i<weeksToCheck; i++) {
           DateTime dateToPass = today.plusDays(7*i);
-          String districtId = "294"; // Bangalore
+          //String districtId = "294"; // Bangalore
           System.out.println("Checking week of " + dateToPass.toString(formatter) + ":");
           Map<String, List<Centre>> response = checker.callAPI(districtId, dateToPass.toString(formatter));
           boolean found = checker.getAvailability(response);
