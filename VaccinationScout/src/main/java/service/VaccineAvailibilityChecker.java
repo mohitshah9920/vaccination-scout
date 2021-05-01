@@ -1,11 +1,14 @@
-package cowin.pojos;
+package service;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.Set;
 
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -29,8 +32,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import cowin.pojos.Centre;
-import cowin.pojos.Session;
+import pojos.Centre;
+import pojos.Session;
 
 public class VaccineAvailibilityChecker {
    
@@ -74,6 +77,26 @@ public class VaccineAvailibilityChecker {
    }
    public static void main(String[] args) throws JsonProcessingException, UnsupportedOperationException, IOException, InterruptedException, UnsupportedAudioFileException, LineUnavailableException {
     VaccineAvailibilityChecker checker = new VaccineAvailibilityChecker();
+    System.out.println("Downloading district data ..");
+    DistrictsDownloader data = new DistrictsDownloader();
+    data.downloadData();
+    Map<String, String> districts = data.getDistrictMap();
+    
+    System.out.println("Enter the exact name of your district as you see in Cowin/Aarogya Setu application and press enter:");
+    System.out.println();
+    System.out.println();
+    System.out.println();
+    Scanner in = new Scanner(System.in);
+    String districtName = in.nextLine();
+    if (districts.containsKey(districtName)) {
+       System.out.println("District found! Lets go..");
+       
+       Thread.sleep(1000);
+    } else {
+       System.out.println("District not found. Exiting ..");
+       System.exit(0);
+    }
+    
     DateTimeFormatter formatter = DateTimeFormat.forPattern("dd-MM-yyyy");
     DateTime today = DateTime.now();
     int weeksToCheck = 6;
@@ -82,43 +105,52 @@ public class VaccineAvailibilityChecker {
        for (int i =0; i<weeksToCheck; i++) {
           DateTime dateToPass = today.plusDays(7*i);
           String districtId = "294"; // Bangalore
-          System.out.println("Checking week of " + dateToPass.toString(formatter));
+          System.out.println("Checking week of " + dateToPass.toString(formatter) + ":");
           Map<String, List<Centre>> response = checker.callAPI(districtId, dateToPass.toString(formatter));
           boolean found = checker.getAvailability(response);
           if (found) {
              System.out.println("Woohoo!");
              playUndertakertheme();
              break;
-          }
+          } 
+          System.out.println();
        }
-       Thread.sleep(1000*30); // check every 30 seconds
+       System.out.println("checking again in 30 seconds..");
+       Thread.sleep(1000*60); // check every 30 seconds
     }
    }
 
    private boolean getAvailability(Map<String, List<Centre>> response) {
-     
+     int age = 18;
       boolean found = false;
-      int avaiableCenters = 0;
       List<Centre> centres = response.get("centers");
+      Set<String> elgibleCentres = new HashSet<String>();
+      Set<String> availableCentres = new HashSet<String>();
       outer:
       for (Centre centre: centres) {
          List<Session> sessions = centre.getSessions();
          for (Session session: sessions) {
             int minAge = session.getMin_age_limit();
-            if (minAge==18) {  // 18+ adults
-               avaiableCenters++;
+            if (minAge==age) {  // 18+ adults
+               elgibleCentres.add(centre.getName());
                int availability = session.getAvailable_capacity();
                if (availability>0) {
+                  availableCentres.add(centre.getName());
                   System.out.println("Slot found!");
                   System.out.println(availability + " slots avaiable at "  + centre.getName() + " on date " + session.getDate());
+                  System.out.println();
                   found = true;
                }
-               continue outer;
+               
             }
          }
       }
-      System.out.println(avaiableCenters + " centers available for 18+ adults out of " + centres.size());
-      System.out.println("No slots found :(");
+      System.out.println(centres.size() + " total centres found.");
+      System.out.println(elgibleCentres.size() + " centers are allowing for 18+ adults");
+      
+      System.out.println(availableCentres.size() + " centers have slots available" );
+      
+      if (!found) System.out.print(" :(");
       return found;
    }
 

@@ -1,4 +1,4 @@
-package cowin.pojos;
+package pojos;
 
 import java.util.List;
 
