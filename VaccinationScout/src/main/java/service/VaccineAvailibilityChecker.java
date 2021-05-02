@@ -52,7 +52,7 @@ public class VaccineAvailibilityChecker {
       Map<String,List<Centre>> response= null;
 //      String distId ="294";
 //      String dateString = "06-05-2021"; 
-      String call = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id="+distId+"&date=" + dateString;
+      String call = "https://cowin.gov.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id="+distId+"&date=" + dateString;
       
       //System.out.println(call);
       CloseableHttpClient httpclient = HttpClients.createDefault();
